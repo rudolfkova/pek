@@ -11,18 +11,30 @@ func XCross(dyn entity.Object, stat entity.Object) bool {
 func YCross(dyn entity.Object, stat entity.Object) bool {
 	return dyn.Y+float64(dyn.Height) >= stat.Y && dyn.Y <= stat.Y+float64(stat.Height)
 }
+
+var a *int8 = new(int8)
+
 func Collision(dyn entity.Object, stat entity.Object) (float64, float64) {
+	if *a == 1 && XCross(dyn, stat) && YCross(dyn, stat) {
+		*a = 0
+		return -dyn.XSpeed, dyn.YSpeed
+	}
+	if *a == 2 && XCross(dyn, stat) && YCross(dyn, stat) {
+		*a = 0
+		return dyn.XSpeed, -dyn.YSpeed
+	}
+	switch true {
+	case YCross(dyn, stat):
+		*a = 1
+	case XCross(dyn, stat):
+		*a = 2
+	}
+	return dyn.XSpeed, dyn.YSpeed
+}
+
+func Collision2(dyn entity.Object, stat entity.Object) (float64, float64) {
 	if XCross(dyn, stat) && YCross(dyn, stat) {
-		if (dyn.X - stat.X) > (dyn.Y - stat.Y) {
-			return dyn.XSpeed, -dyn.YSpeed
-		}
-		if (dyn.X - stat.X) < (dyn.Y - stat.Y) {
-			return -dyn.XSpeed, dyn.YSpeed
-		}
-		if (dyn.X - (stat.X + float64(stat.Width))) < ((stat.Y + float64(stat.Height)) - dyn.Y) {
-			return -dyn.XSpeed, dyn.YSpeed
-		}
-		if (dyn.X - (stat.X + float64(stat.Width))) > ((stat.Y + float64(stat.Height)) - dyn.Y) {
+		if YCross(dyn, stat) {
 			return dyn.XSpeed, -dyn.YSpeed
 		}
 	}

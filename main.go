@@ -55,13 +55,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	cords.DrawPlane(screen, screenWidth, screenHeight)
 	cords.DebugCoords(screen, g.xWater, g.yWater, g.xSpeedWater, g.ySpeedWater, 0, 0)
 	cords.DebugCoordsObject(screen, g.redCircle)
-	cords.MousePos(screen)
+
+	g.redCircle.XSpeed, g.redCircle.YSpeed = physics.Collision(*g.redCircle, *g.pump1)
 	// Перемещаем круг
 	g.xWater += g.xSpeedWater
 	g.yWater += g.ySpeedWater
 	g.redCircle.X += g.redCircle.XSpeed
 	g.redCircle.Y += g.redCircle.YSpeed
-	g.redCircle.XSpeed, g.redCircle.YSpeed = physics.Collision(*g.redCircle, *g.pump1)
+
 	g.redCircle.XSpeed, g.redCircle.YSpeed = physics.ScreenCollision(*g.redCircle, screenWidth, screenHeight)
 	if g.xWater+5 > g.xPump-5 && g.xWater-5 < g.xPump+5 && g.yWater+5 > g.yPump-50 && g.yWater-5 < g.yPump+50 {
 		g.xSpeedWater = -g.xSpeedWater
@@ -89,6 +90,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opPump1 := &ebiten.DrawImageOptions{}
 	opPump1.GeoM.Translate(g.pump1.X, g.pump1.Y)
 	screen.DrawImage(g.pump1.Img, opPump1)
+	cords.MousePos(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -98,7 +100,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	redCircle := entity.NewObject(100, 100, 10, 10, color.RGBA{255, 0, 0, 255})
 	entity.NewObjectSpd(redCircle, 0.2, 0.2)
-	pump1 := entity.NewObject(200, 100, 100, 100, color.RGBA{255, 255, 255, 255})
+	pump1 := entity.NewObject(200, 100, 100, 100, color.RGBA{0, 255, 0, 255})
 	g := NewGame()
 	g.redCircle = redCircle
 	g.pump1 = pump1
