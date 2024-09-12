@@ -12,34 +12,35 @@ func YCross(dyn entity.Object, stat entity.Object) bool {
 	return dyn.Y+float64(dyn.Height) >= stat.Y && dyn.Y <= stat.Y+float64(stat.Height)
 }
 
-var a *int8 = new(int8)
+var dynObj []*entity.Object
+var statObj []*entity.Object
 
-func Collision(dyn entity.Object, stat entity.Object) (float64, float64) {
-	if *a == 1 && XCross(dyn, stat) && YCross(dyn, stat) {
-		*a = 0
-		return -dyn.XSpeed, dyn.YSpeed
-	}
-	if *a == 2 && XCross(dyn, stat) && YCross(dyn, stat) {
-		*a = 0
-		return dyn.XSpeed, -dyn.YSpeed
-	}
-	switch true {
-	case YCross(dyn, stat):
-		*a = 1
-	case XCross(dyn, stat):
-		*a = 2
-	}
-	return dyn.XSpeed, dyn.YSpeed
+func InitDyn(dyn ...*entity.Object) {
+	dynObj = append(dynObj, dyn...)
+}
+func InitStat(stat ...*entity.Object) {
+	statObj = append(statObj, stat...)
 }
 
-func Collision2(dyn entity.Object, stat entity.Object) (float64, float64) {
-	if XCross(dyn, stat) && YCross(dyn, stat) {
-		if YCross(dyn, stat) {
-			return dyn.XSpeed, -dyn.YSpeed
+func Collision() {
+	for _, d := range dynObj {
+		for _, s := range statObj {
+			if *d.Collision == 1 && XCross(*d, *s) && YCross(*d, *s) {
+				*d.Collision = 0
+				d.XSpeed = -d.XSpeed
+			}
+			if *d.Collision == 2 && XCross(*d, *s) && YCross(*d, *s) {
+				*d.Collision = 0
+				d.YSpeed = -d.YSpeed
+			}
+			switch true {
+			case YCross(*d, *s):
+				*d.Collision = 1
+			case XCross(*d, *s):
+				*d.Collision = 2
+			}
 		}
 	}
-	return dyn.XSpeed, dyn.YSpeed
-	// return dyn.X+float64(dyn.Width)/2 > stat.X-float64(stat.Width)/2 && dyn.X-float64(dyn.Width)/2 < stat.X+float64(stat.Width)/2 && dyn.Y+float64(dyn.Height)/2 > stat.Y-float64(stat.Height)/2 && dyn.Y-float64(dyn.Height)/2 < stat.Y+float64(stat.Height)/2
 }
 
 func ScreenCollision(dyn entity.Object, screenWidth int, screenHeight int) (float64, float64) {

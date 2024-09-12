@@ -7,13 +7,14 @@ import (
 )
 
 type Object struct {
-	X      float64
-	Y      float64
-	Width  uint
-	Height uint
-	Img    *ebiten.Image
-	XSpeed float64
-	YSpeed float64
+	X         float64
+	Y         float64
+	Width     uint
+	Height    uint
+	Img       *ebiten.Image
+	XSpeed    float64
+	YSpeed    float64
+	Collision *int8
 }
 
 func NewObject(x float64, y float64, width uint, height uint, color color.RGBA) *Object {
@@ -24,6 +25,7 @@ func NewObject(x float64, y float64, width uint, height uint, color color.RGBA) 
 		Height: height,
 		Img:    ebiten.NewImage(int(width), int(height)),
 	}
+	o.Collision = new(int8)
 	o.Img.Fill(color)
 	return o
 }
