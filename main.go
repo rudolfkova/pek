@@ -4,6 +4,8 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
+
 	"github.com/rudolfkova/pek/cords"
 	"github.com/rudolfkova/pek/entity"
 	"github.com/rudolfkova/pek/physics"
@@ -15,20 +17,23 @@ const (
 )
 
 type Game struct {
-	redCircle *entity.Object
+	redCircle  *entity.Object
 	blueCircle *entity.Object
-	pump1     *entity.Object
-	pump2     *entity.Object
+	pump1      *entity.Object
+	pump2      *entity.Object
+	character  *entity.Character
 }
 
 func NewGame() *Game {
 	g := &Game{}
 	redCircle := entity.NewObject(20, 250, 10, 10, color.RGBA{255, 0, 0, 255})
 	blueCircle := entity.NewObject(20, 300, 10, 10, color.RGBA{0, 0, 255, 255})
-	entity.NewObjectSpd(redCircle, 5, 5)
-	entity.NewObjectSpd(blueCircle, 5, 5)
-	pump1 := entity.NewObject(500, 300, 500, 20, color.RGBA{0, 255, 0, 255})
-	pump2 := entity.NewObject(0, 200, 500, 20, color.RGBA{0, 255, 0, 255})
+	entity.NewObjectSpd(redCircle, 10, 5)
+	entity.NewObjectSpd(blueCircle, 15, 2)
+	pump1 := entity.NewObject(100, 100, 100, 100, color.RGBA{0, 255, 0, 255})
+	pump2 := entity.NewObject(300, 300, 100, 100, color.RGBA{0, 255, 0, 255})
+	character := entity.NewCharacter("Артем", 200, 300, 10, 20, color.RGBA{R: 0, G: 0, B: 255, A: 255})
+	g.character = character
 	g.blueCircle = blueCircle
 	g.pump2 = pump2
 	g.redCircle = redCircle
@@ -41,27 +46,24 @@ func NewGame() *Game {
 		g.pump1,
 		g.pump2,
 	)
+	physics.NewStatVec()
 
 	return g
 }
 
 func (g *Game) Update() error {
 	physics.Collision()
-	g.redCircle.X += g.redCircle.XSpeed
-	g.redCircle.Y += g.redCircle.YSpeed
-	g.blueCircle.X += g.blueCircle.XSpeed
-	g.blueCircle.Y += g.blueCircle.YSpeed
-
-	g.redCircle.XSpeed, g.redCircle.YSpeed = physics.ScreenCollision(*g.redCircle, screenWidth, screenHeight)
-	g.blueCircle.XSpeed, g.blueCircle.YSpeed = physics.ScreenCollision(*g.blueCircle, screenWidth, screenHeight)
+	physics.Move()
+	physics.ScreenCollision(screenWidth, screenHeight)
+	physics.CharacterMove(g.character)
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{0xff, 0xff, 0xff, 0xff})
-	cords.DrawPlane(screen, screenWidth, screenHeight)
+	screen.Fill(color.RGBA{0, 0, 0, 255})
 	cords.DebugCoordsObject(screen, g.redCircle)
+	cords.DebugCharacter(screen, g.character, g.pump1)
 	// Красный круг
 	opRedCircle := &ebiten.DrawImageOptions{}
 	opRedCircle.GeoM.Translate(g.redCircle.X, g.redCircle.Y)
@@ -79,6 +81,26 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opBlueCircle := &ebiten.DrawImageOptions{}
 	opBlueCircle.GeoM.Translate(g.blueCircle.X, g.blueCircle.Y)
 	screen.DrawImage(g.blueCircle.Img, opBlueCircle)
+	// Персонаж
+	opCharacter := &ebiten.DrawImageOptions{}
+	opCharacter.GeoM.Translate(g.character.X, g.character.Y)
+	screen.DrawImage(g.character.Img, opCharacter)
+	//Вектор скорости
+	vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(g.character.SpdVec.X2), float32(g.character.SpdVec.Y2), 1, color.RGBA{255, 255, 255, 255}, true)
+	xc, yc, err := g.character.SpdVec.Intersect(&g.pump1.AB)
+	if err == nil && xc > g.pump1.X && xc < g.pump1.X+float64(g.pump1.Width) {
+		vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(xc), float32(yc), 1, color.RGBA{255, 255, 255, 255}, true)
+	}
+
+	xc2, yc2, err2 := g.character.SpdVec.Intersect(&g.pump1.BC)
+	if err2 == nil && yc2 > g.pump1.BC.Y1 && yc2 < g.pump1.BC.Y2 {
+		vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(xc2), float32(yc2), 1, color.RGBA{255, 255, 255, 255}, true)
+	}
+
+	// xc1, yc1, err1 := g.character.SpdVec.Intersect(&g.pump1.BC)
+	// if err1 == nil && yc1 > g.pump1.Y && yc1 < g.pump1.Y + float64(g.pump1.Height) {
+	// 	vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(xc1), float32(yc1), 1, color.RGBA{255, 255, 255, 255}, true)
+	// }
 
 }
 
@@ -89,8 +111,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 func main() {
 	g := NewGame()
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Синий круг")
-	ebiten.SetVsyncEnabled(false)
+	ebiten.SetWindowTitle("Андрей Паньков")
+	ebiten.SetVsyncEnabled(true)
 	if err := ebiten.RunGame(g); err != nil {
 		panic(err)
 	}

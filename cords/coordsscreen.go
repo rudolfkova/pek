@@ -9,6 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/rudolfkova/pek/entity"
+	"github.com/rudolfkova/pek/physics"
 )
 
 // Создаёт координатную плоскость на экране
@@ -49,6 +50,21 @@ func DebugCoordsObject(screen *ebiten.Image, obj *entity.Object) {
 			obj.XSpeed,
 			obj.YSpeed,
 			spd,
+		),
+		xPos, yPos,
+	)
+}
+
+func DebugCharacter(screen *ebiten.Image, obj *entity.Character, stat *entity.Object) {
+	xPos, yPos := 0, 0
+	ebitenutil.DebugPrintAt(
+		screen,
+		fmt.Sprintf(
+			"XCrossCharacter: %t, YCrossCharacter:%t, XSpeed:%.2f, YSpeed:%.2f",
+			physics.XCrossCharacter(*obj, *stat),
+			physics.YCrossCharacter(*obj, *stat),
+			obj.XSpeed,
+			obj.YSpeed,
 		),
 		xPos, yPos,
 	)
