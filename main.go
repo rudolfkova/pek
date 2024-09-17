@@ -4,84 +4,77 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
+
 	"github.com/rudolfkova/pek/cords"
 	"github.com/rudolfkova/pek/entity"
 	"github.com/rudolfkova/pek/physics"
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 320
+	screenWidth  = 1000
+	screenHeight = 500
 )
 
 type Game struct {
-	//Вода
-	water       *ebiten.Image
-	xWater      float64
-	yWater      float64
-	xSpeedWater float64
-	ySpeedWater float64
-	//Труба
-	pump      *ebiten.Image
-	xPump     float64
-	yPump     float64
-	redCircle *entity.Object
-	pump1     *entity.Object
+	redCircle  *entity.Object
+	blueCircle *entity.Object
+	pump1      *entity.Object
+	pump2      *entity.Object
+	character  *entity.Character
+	wall1      *entity.Object
+	wall2      *entity.Object
+	allstat    []*entity.Object
 }
 
 func NewGame() *Game {
-	g := &Game{
-		water:       ebiten.NewImage(10, 10),
-		xWater:      1,
-		yWater:      1,
-		xSpeedWater: 0.3,
-		ySpeedWater: 0.3,
-		pump:        ebiten.NewImage(10, 100),
-		xPump:       100,
-		yPump:       50,
-	}
-	g.water.Fill(color.RGBA{0, 0, 255, 255})
-	g.pump.Fill(color.RGBA{255, 255, 255, 255})
+	g := &Game{}
+	redCircle := entity.NewObject(20, 250, 10, 10, color.RGBA{255, 0, 0, 255})
+	blueCircle := entity.NewObject(20, 300, 10, 10, color.RGBA{0, 0, 255, 255})
+	entity.NewObjectSpd(redCircle, 10, 5)
+	entity.NewObjectSpd(blueCircle, 15, 2)
+	pump1 := entity.NewObject(100, 100, 100, 100, color.RGBA{0, 255, 0, 255})
+	pump2 := entity.NewObject(300, 300, 100, 100, color.RGBA{0, 255, 0, 255})
+	wall1 := entity.NewObject(500, 0, 20, 400, color.RGBA{26, 35, 73, 100})
+	wall2 := entity.NewObject(600, screenHeight-400, 20, 400, color.RGBA{26, 35, 73, 100})
+	character := entity.NewCharacter("Артем", 200, 300, 20, 20, color.RGBA{R: 0, G: 0, B: 255, A: 255})
+	g.character = character
+	g.blueCircle = blueCircle
+	g.pump2 = pump2
+	g.redCircle = redCircle
+	g.pump1 = pump1
+	g.wall1 = wall1
+	g.wall2 = wall2
+	g.allstat = wall1.Split()
+	physics.InitStat(g.allstat...)
+	g.allstat = wall2.Split()
+	physics.InitStat(g.allstat...)
+	physics.InitDyn(
+		g.redCircle,
+		g.blueCircle,
+	)
+	physics.InitStat(
+		g.pump1,
+		g.pump2,
+	)
+	physics.NewStatVec()
+
 	return g
 }
 
 func (g *Game) Update() error {
+	physics.Collision()
+	physics.Move()
+	physics.ScreenCollision(screenWidth, screenHeight)
+
+	physics.CharacterMove(g.character)
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{0xff, 0xff, 0xff, 0xff})
-	cords.DrawPlane(screen, screenWidth, screenHeight)
-	cords.DebugCoords(screen, g.xWater, g.yWater, g.xSpeedWater, g.ySpeedWater, 0, 0)
+	screen.Fill(color.RGBA{0, 0, 0, 255})
 	cords.DebugCoordsObject(screen, g.redCircle)
-
-	g.redCircle.XSpeed, g.redCircle.YSpeed = physics.Collision(*g.redCircle, *g.pump1)
-	// Перемещаем круг
-	g.xWater += g.xSpeedWater
-	g.yWater += g.ySpeedWater
-	g.redCircle.X += g.redCircle.XSpeed
-	g.redCircle.Y += g.redCircle.YSpeed
-
-	g.redCircle.XSpeed, g.redCircle.YSpeed = physics.ScreenCollision(*g.redCircle, screenWidth, screenHeight)
-	if g.xWater+5 > g.xPump-5 && g.xWater-5 < g.xPump+5 && g.yWater+5 > g.yPump-50 && g.yWater-5 < g.yPump+50 {
-		g.xSpeedWater = -g.xSpeedWater
-	}
-	if g.xWater+10 > screenWidth || g.xWater < 0 {
-		g.xSpeedWater = -g.xSpeedWater
-	}
-	if g.yWater+10 > screenHeight || g.yWater < 0 {
-		g.ySpeedWater = -g.ySpeedWater
-	}
-	g.xSpeedWater, g.ySpeedWater = cords.MouseStop(g.xSpeedWater, g.ySpeedWater)
-	// Вода
-	opWater := &ebiten.DrawImageOptions{}
-	opWater.GeoM.Translate(g.xWater, g.yWater)
-	screen.DrawImage(g.water, opWater)
-	// Труба
-	opPump := &ebiten.DrawImageOptions{}
-	opPump.GeoM.Translate(g.xPump, g.yPump)
-	screen.DrawImage(g.pump, opPump)
+	cords.DebugCharacter(screen, g.character, g.pump1)
 	// Красный круг
 	opRedCircle := &ebiten.DrawImageOptions{}
 	opRedCircle.GeoM.Translate(g.redCircle.X, g.redCircle.Y)
@@ -91,6 +84,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opPump1.GeoM.Translate(g.pump1.X, g.pump1.Y)
 	screen.DrawImage(g.pump1.Img, opPump1)
 	cords.MousePos(screen)
+	// Труба2
+	opPump2 := &ebiten.DrawImageOptions{}
+	opPump2.GeoM.Translate(g.pump2.X, g.pump2.Y)
+	screen.DrawImage(g.pump2.Img, opPump2)
+	// Синий круг
+	opBlueCircle := &ebiten.DrawImageOptions{}
+	opBlueCircle.GeoM.Translate(g.blueCircle.X, g.blueCircle.Y)
+	screen.DrawImage(g.blueCircle.Img, opBlueCircle)
+	// Персонаж
+	opCharacter := &ebiten.DrawImageOptions{}
+	opCharacter.GeoM.Translate(g.character.X, g.character.Y)
+	screen.DrawImage(g.character.Img, opCharacter)
+	// Стены
+	opWall1 := &ebiten.DrawImageOptions{}
+	opWall1.GeoM.Translate(g.wall1.X, g.wall1.Y)
+	screen.DrawImage(g.wall1.Img, opWall1)
+	opWall2 := &ebiten.DrawImageOptions{}
+	opWall2.GeoM.Translate(g.wall2.X, g.wall2.Y)
+	screen.DrawImage(g.wall2.Img, opWall2)
+	//Вектора
+	cords.DebugCollision(screen, g.character, g.pump1, g.pump2)
+
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -98,15 +113,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func main() {
-	redCircle := entity.NewObject(100, 100, 10, 10, color.RGBA{255, 0, 0, 255})
-	entity.NewObjectSpd(redCircle, 0.2, 0.2)
-	pump1 := entity.NewObject(200, 100, 100, 100, color.RGBA{0, 255, 0, 255})
 	g := NewGame()
-	g.redCircle = redCircle
-	g.pump1 = pump1
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Синий круг")
-	ebiten.SetVsyncEnabled(false)
+	ebiten.SetWindowTitle("Андрей Паньков")
+	ebiten.SetVsyncEnabled(true)
 	if err := ebiten.RunGame(g); err != nil {
 		panic(err)
 	}
