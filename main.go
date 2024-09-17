@@ -4,7 +4,6 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 
 	"github.com/rudolfkova/pek/cords"
 	"github.com/rudolfkova/pek/entity"
@@ -22,6 +21,9 @@ type Game struct {
 	pump1      *entity.Object
 	pump2      *entity.Object
 	character  *entity.Character
+	wall1      *entity.Object
+	wall2      *entity.Object
+	allstat    []*entity.Object
 }
 
 func NewGame() *Game {
@@ -32,12 +34,20 @@ func NewGame() *Game {
 	entity.NewObjectSpd(blueCircle, 15, 2)
 	pump1 := entity.NewObject(100, 100, 100, 100, color.RGBA{0, 255, 0, 255})
 	pump2 := entity.NewObject(300, 300, 100, 100, color.RGBA{0, 255, 0, 255})
-	character := entity.NewCharacter("Артем", 200, 300, 10, 20, color.RGBA{R: 0, G: 0, B: 255, A: 255})
+	wall1 := entity.NewObject(500, 0, 20, 400, color.RGBA{26, 35, 73, 100})
+	wall2 := entity.NewObject(600, screenHeight-400, 20, 400, color.RGBA{26, 35, 73, 100})
+	character := entity.NewCharacter("Артем", 200, 300, 20, 20, color.RGBA{R: 0, G: 0, B: 255, A: 255})
 	g.character = character
 	g.blueCircle = blueCircle
 	g.pump2 = pump2
 	g.redCircle = redCircle
 	g.pump1 = pump1
+	g.wall1 = wall1
+	g.wall2 = wall2
+	g.allstat = wall1.Split()
+	physics.InitStat(g.allstat...)
+	g.allstat = wall2.Split()
+	physics.InitStat(g.allstat...)
 	physics.InitDyn(
 		g.redCircle,
 		g.blueCircle,
@@ -55,6 +65,7 @@ func (g *Game) Update() error {
 	physics.Collision()
 	physics.Move()
 	physics.ScreenCollision(screenWidth, screenHeight)
+
 	physics.CharacterMove(g.character)
 
 	return nil
@@ -85,22 +96,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	opCharacter := &ebiten.DrawImageOptions{}
 	opCharacter.GeoM.Translate(g.character.X, g.character.Y)
 	screen.DrawImage(g.character.Img, opCharacter)
-	//Вектор скорости
-	vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(g.character.SpdVec.X2), float32(g.character.SpdVec.Y2), 1, color.RGBA{255, 255, 255, 255}, true)
-	xc, yc, err := g.character.SpdVec.Intersect(&g.pump1.AB)
-	if err == nil && xc > g.pump1.X && xc < g.pump1.X+float64(g.pump1.Width) {
-		vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(xc), float32(yc), 1, color.RGBA{255, 255, 255, 255}, true)
-	}
-
-	xc2, yc2, err2 := g.character.SpdVec.Intersect(&g.pump1.BC)
-	if err2 == nil && yc2 > g.pump1.BC.Y1 && yc2 < g.pump1.BC.Y2 {
-		vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(xc2), float32(yc2), 1, color.RGBA{255, 255, 255, 255}, true)
-	}
-
-	// xc1, yc1, err1 := g.character.SpdVec.Intersect(&g.pump1.BC)
-	// if err1 == nil && yc1 > g.pump1.Y && yc1 < g.pump1.Y + float64(g.pump1.Height) {
-	// 	vector.StrokeLine(screen, float32(g.character.SpdVec.X1), float32(g.character.SpdVec.Y1), float32(xc1), float32(yc1), 1, color.RGBA{255, 255, 255, 255}, true)
-	// }
+	// Стены
+	opWall1 := &ebiten.DrawImageOptions{}
+	opWall1.GeoM.Translate(g.wall1.X, g.wall1.Y)
+	screen.DrawImage(g.wall1.Img, opWall1)
+	opWall2 := &ebiten.DrawImageOptions{}
+	opWall2.GeoM.Translate(g.wall2.X, g.wall2.Y)
+	screen.DrawImage(g.wall2.Img, opWall2)
+	//Вектора
+	cords.DebugCollision(screen, g.character, g.pump1, g.pump2)
 
 }
 
