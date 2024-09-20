@@ -63,7 +63,7 @@ func NewGame() *Game {
 
 func (g *Game) Update() error {
 	physics.Collision()
-	physics.Move()
+	physics.DynMove()
 	physics.ScreenCollision(screenWidth, screenHeight)
 
 	physics.CharacterMove(g.character)
@@ -74,7 +74,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0, 0, 0, 255})
 	cords.DebugCoordsObject(screen, g.redCircle)
-	cords.DebugCharacter(screen, g.character, g.pump1)
+	cords.DebugCharacter(screen, g.character, g.allstat)
 	// Красный круг
 	opRedCircle := &ebiten.DrawImageOptions{}
 	opRedCircle.GeoM.Translate(g.redCircle.X, g.redCircle.Y)
