@@ -9,6 +9,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/rudolfkova/pek/entity"
+	"github.com/rudolfkova/pek/physics"
+	"github.com/rudolfkova/pek/vec"
 )
 
 // Создаёт координатную плоскость на экране
@@ -129,5 +131,35 @@ func DebugCollision(screen *ebiten.Image, c *entity.Character, stat ...*entity.O
 			}
 		}
 
+	}
+}
+
+func DebugDyn (screen *ebiten.Image, dyn []*entity.Object, stats []*entity.Object) {
+	for _, c := range dyn {
+		for _, stat := range stats {
+			c.XCenter = c.X + float64(c.Width)/2
+			c.YCenter = c.Y + float64(c.Height)/2
+			colLine := vec.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
+			xc1, _, err1 := colLine.Intersect(&stat.AB)
+			xc2, _, err2 := colLine.Intersect(&stat.DC)
+			_, yc3, err3 := colLine.Intersect(&stat.BC)
+			_, yc4, err4 := colLine.Intersect(&stat.AD)
+			if (c.YCenter+float64(c.Height/2) == stat.AB.Y1) && (xc1 > stat.AB.X1 && xc1 < stat.AB.X2) && physics.ABSign(c.SpdVec) && c.AllCross(stats) && err1 == nil {
+				c.YSpeed = -c.YSpeed
+			}
+
+			if (c.YCenter-float64(c.Height/2) == stat.DC.Y1) && (xc2 > stat.DC.X1 && xc2 < stat.DC.X2) && physics.DCSign(c.SpdVec) && c.AllCross(stats) && err2 == nil {
+				c.YSpeed = -c.YSpeed
+			}
+
+			if (c.XCenter-float64(c.Width/2) == stat.BC.X1) && (yc3 > stat.BC.Y1 && yc3 < stat.BC.Y2) && physics.BCSign(c.SpdVec) && c.AllCross(stats) && err3 == nil {
+				c.XSpeed = -c.XSpeed
+			}
+
+			if (c.XCenter+float64(c.Width/2) == stat.AD.X1) && (yc4 > stat.AD.Y1 && yc4 < stat.AD.Y2) && physics.ADSign(c.SpdVec) && c.AllCross(stats) && err4 == nil {
+				c.XSpeed = -c.XSpeed
+
+			}
+		}
 	}
 }

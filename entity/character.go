@@ -8,21 +8,21 @@ import (
 )
 
 type Character struct {
-	Name        string
-	X           float64
-	Y           float64
-	XSpeed      float64
-	XSpeedConst float64
-	YSpeed      float64
-	YSpeedConst float64
-	Img         *ebiten.Image
-	Width       uint
-	Height      uint
-	HP          int
-	Collision   *Crossroad
-	XCenter     float64
-	YCenter     float64
-	SpdVec      vec.Vec
+	Name         string
+	X            float64
+	Y            float64
+	XSpeed       float64
+	XSpeedConst  float64
+	YSpeed       float64
+	YSpeedConst  float64
+	Img          *ebiten.Image
+	Width        uint
+	Height       uint
+	HP           int
+	DynCollision *Crossroad
+	XCenter      float64
+	YCenter      float64
+	SpdVec       vec.Vec
 }
 
 func NewCharacter(name string, x float64, y float64, width uint, height uint, color color.RGBA) *Character {
@@ -39,7 +39,7 @@ func NewCharacter(name string, x float64, y float64, width uint, height uint, co
 	}
 	c.XCenter = x + float64(width)/2
 	c.YCenter = y + float64(height)/2
-	c.Collision = new(Crossroad)
+	c.DynCollision = new(Crossroad)
 	c.Img.Fill(color)
 	return c
 }

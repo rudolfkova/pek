@@ -31,11 +31,11 @@ func NewGame() *Game {
 	redCircle := entity.NewObject(20, 250, 10, 10, color.RGBA{255, 0, 0, 255})
 	blueCircle := entity.NewObject(20, 300, 10, 10, color.RGBA{0, 0, 255, 255})
 	entity.NewObjectSpd(redCircle, 10, 5)
-	entity.NewObjectSpd(blueCircle, 15, 2)
+	entity.NewObjectSpd(blueCircle, 5, 5)
 	pump1 := entity.NewObject(100, 100, 100, 100, color.RGBA{0, 255, 0, 255})
 	pump2 := entity.NewObject(300, 300, 100, 100, color.RGBA{0, 255, 0, 255})
-	wall1 := entity.NewObject(500, 0, 20, 400, color.RGBA{26, 35, 73, 100})
-	wall2 := entity.NewObject(600, screenHeight-400, 20, 400, color.RGBA{26, 35, 73, 100})
+	wall1 := entity.NewObject(500, 0, 40, 400, color.RGBA{26, 35, 73, 100})
+	wall2 := entity.NewObject(600, screenHeight-400, 40, 400, color.RGBA{26, 35, 73, 100})
 	character := entity.NewCharacter("Артем", 200, 300, 20, 20, color.RGBA{R: 0, G: 0, B: 255, A: 255})
 	g.character = character
 	g.blueCircle = blueCircle
@@ -44,9 +44,17 @@ func NewGame() *Game {
 	g.pump1 = pump1
 	g.wall1 = wall1
 	g.wall2 = wall2
-	g.allstat = wall1.Split()
+	w1, err1 := wall1.Split()
+	if err1!= nil {
+		panic(err1)
+	}
+	g.allstat = w1
 	physics.InitStat(g.allstat...)
-	g.allstat = wall2.Split()
+	w2, err2 := wall2.Split()
+	if err2!= nil {
+		panic(err2)
+	}
+	g.allstat = w2
 	physics.InitStat(g.allstat...)
 	physics.InitDyn(
 		g.redCircle,
@@ -62,7 +70,7 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
-	physics.Collision()
+	physics.DynCollision()
 	physics.DynMove()
 	physics.ScreenCollision(screenWidth, screenHeight)
 
