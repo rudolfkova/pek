@@ -1,4 +1,4 @@
-package vec
+package Line
 
 import (
 	"fmt"
@@ -6,33 +6,33 @@ import (
 	"math"
 )
 
-type Vec struct {
+type Line struct {
 	X1, Y1 float64
 	X2, Y2 float64
-	Color color.RGBA
+	Color  color.RGBA
 }
 
-func NewVec(x1, y1, x2, y2 float64) *Vec {
-	return &Vec{
+func NewVec(x1, y1, x2, y2 float64) *Line {
+	return &Line{
 		X1: x1,
 		Y1: y1,
 		X2: x2,
 		Y2: y2,
 	}
 }
-func (v *Vec) Length() float64 {
+func (v *Line) Length() float64 {
 	return math.Sqrt(math.Pow(v.X2-v.X1, 2) + math.Pow(v.Y2-v.Y1, 2))
 }
 
-func (v *Vec) XLength() float64 {
+func (v *Line) XLength() float64 {
 	return math.Abs(v.X2 - v.X1)
 }
-func (v *Vec) YLength() float64 {
+func (v *Line) YLength() float64 {
 	return math.Abs(v.Y2 - v.Y1)
 }
 
 // Метод, который определяет, пересекаются ли два отрезка
-func (v *Vec) Intersect(v2 *Vec) (float64, float64, error) {
+func (v *Line) Intersect(v2 *Line) (float64, float64, error) {
 	var x float64
 	var y float64
 	K1 := (v.Y1 - v.Y2) / (v.X1 - v.X2)
@@ -54,14 +54,14 @@ func (v *Vec) Intersect(v2 *Vec) (float64, float64, error) {
 	return x, y, nil
 }
 
-func (v *Vec) Dist(x, y float64, err error) (float64, error) {
+func (v *Line) Dist(x, y float64, err error) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
 	return math.Sqrt(math.Pow(v.X1-x, 2) + math.Pow(v.Y1-y, 2)), nil
 }
 
-func (v *Vec) Signs(xc, yc float64) bool {
+func (v *Line) Signs(xc, yc float64) bool {
 	var positive bool = ((xc-v.X1 > 0) && (yc-v.Y1 > 0)) && ((v.X2-v.X1 > 0) && (v.Y2-v.Y1 > 0))
 	var negative bool = ((xc-v.X1 < 0) && (yc-v.Y1 < 0)) && ((v.X2-v.X1 < 0) && (v.Y2-v.Y1 < 0))
 	var positiveNegative bool = ((xc-v.X1 > 0) && (yc-v.Y1 < 0)) && ((v.X2-v.X1 > 0) && (v.Y2-v.Y1 < 0))
@@ -87,7 +87,7 @@ const (
 	Up
 )
 
-func (v *Vec) Sign() Sign {
+func (v *Line) Sign() Sign {
 	//Право-низ
 	if (v.X2-v.X1 > 0) && (v.Y2-v.Y1 > 0) {
 		return Positive

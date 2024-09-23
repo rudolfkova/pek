@@ -2,8 +2,8 @@ package physics
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/rudolfkova/pek/entity"
 	"github.com/rudolfkova/pek/vec"
+	"github.com/rudolfkova/pek/entity"
 )
 
 /*Физика отражений. Динамические объекты сталкиваются со статическими и отражаются.
@@ -20,12 +20,12 @@ func DynCollision() {
 		for _, stat := range statObj {
 			c.XCenter = c.X + float64(c.Width)/2
 			c.YCenter = c.Y + float64(c.Height)/2
-			colLine := vec.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
+			colLine := Line.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
 			xc1, _, err1 := colLine.Intersect(&stat.AB)
 			xc2, _, err2 := colLine.Intersect(&stat.DC)
 			_, yc3, err3 := colLine.Intersect(&stat.BC)
 			_, yc4, err4 := colLine.Intersect(&stat.AD)
-			c.SpdVec = *vec.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
+			c.SpdVec = *Line.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
 			if (c.YCenter+float64(c.Height/2) == stat.AB.Y1) && (xc1 > stat.AB.X1 && xc1 < stat.AB.X2) && ABSign(c.SpdVec) && c.AllCross(statObj) && err1 == nil {
 				c.YSpeed = -c.YSpeed
 			}
@@ -69,7 +69,7 @@ func DynMove() {
 func CharacterMove(c *entity.Character) {
 	c.XCenter = c.X + float64(c.Width)/2
 	c.YCenter = c.Y + float64(c.Height)/2
-	c.SpdVec = *vec.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
+	c.SpdVec = *Line.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
 	CharacterCollision(c)
 	if ebiten.IsKeyPressed(ebiten.KeyW) && disKeyWS != disKeyW {
 		if c.YSpeed >= 0 {
@@ -77,7 +77,7 @@ func CharacterMove(c *entity.Character) {
 		}
 		c.XCenter = c.X + float64(c.Width)/2
 		c.YCenter = c.Y + float64(c.Height)/2
-		c.SpdVec = *vec.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
+		c.SpdVec = *Line.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
 		CharacterCollision(c)
 		c.Y += c.YSpeed
 	}
@@ -87,7 +87,7 @@ func CharacterMove(c *entity.Character) {
 		}
 		c.XCenter = c.X + float64(c.Width)/2
 		c.YCenter = c.Y + float64(c.Height)/2
-		c.SpdVec = *vec.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
+		c.SpdVec = *Line.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
 		CharacterCollision(c)
 		c.Y += c.YSpeed
 
@@ -98,7 +98,7 @@ func CharacterMove(c *entity.Character) {
 		}
 		c.XCenter = c.X + float64(c.Width)/2
 		c.YCenter = c.Y + float64(c.Height)/2
-		c.SpdVec = *vec.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
+		c.SpdVec = *Line.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
 		CharacterCollision(c)
 		c.X += c.XSpeed
 	}
@@ -108,7 +108,7 @@ func CharacterMove(c *entity.Character) {
 		}
 		c.XCenter = c.X + float64(c.Width)/2
 		c.YCenter = c.Y + float64(c.Height)/2
-		c.SpdVec = *vec.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
+		c.SpdVec = *Line.NewVec(c.XCenter, c.YCenter, c.XCenter+c.XSpeed, c.YCenter+c.YSpeed)
 		CharacterCollision(c)
 		c.X += c.XSpeed
 	}
@@ -120,24 +120,24 @@ func CharacterMove(c *entity.Character) {
 	}
 }
 
-func ABSign(v vec.Vec) bool {
+func ABSign(v Line.Line) bool {
 	b := v.Sign()
-	return b == vec.Down || b == vec.Positive || b == vec.NegativePositive
+	return b == Line.Down || b == Line.Positive || b == Line.NegativePositive
 }
 
-func BCSign(v vec.Vec) bool {
+func BCSign(v Line.Line) bool {
 	b := v.Sign()
-	return b == vec.Left || b == vec.Negative || b == vec.NegativePositive
+	return b == Line.Left || b == Line.Negative || b == Line.NegativePositive
 }
 
-func DCSign(v vec.Vec) bool {
+func DCSign(v Line.Line) bool {
 	b := v.Sign()
-	return b == vec.Up || b == vec.PositiveNegative || b == vec.Negative
+	return b == Line.Up || b == Line.PositiveNegative || b == Line.Negative
 }
 
-func ADSign(v vec.Vec) bool {
+func ADSign(v Line.Line) bool {
 	b := v.Sign()
-	return b == vec.Right || b == vec.PositiveNegative || b == vec.Positive
+	return b == Line.Right || b == Line.PositiveNegative || b == Line.Positive
 }
 
 type disKey int8
@@ -155,7 +155,7 @@ var disKeyAD disKey
 
 func CharacterCollision(c *entity.Character) {
 	for _, stat := range statObj {
-		colLine := vec.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
+		colLine := Line.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
 		xc1, _, err1 := colLine.Intersect(&stat.AB)
 		xc2, _, err2 := colLine.Intersect(&stat.DC)
 		_, yc3, err3 := colLine.Intersect(&stat.BC)

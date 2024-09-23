@@ -30,8 +30,8 @@ func NewGame() *Game {
 	g := &Game{}
 	redCircle := entity.NewObject(20, 250, 10, 10, color.RGBA{255, 0, 0, 255})
 	blueCircle := entity.NewObject(20, 300, 10, 10, color.RGBA{0, 0, 255, 255})
-	entity.NewObjectSpd(redCircle, 10, 5)
-	entity.NewObjectSpd(blueCircle, 5, 5)
+	entity.NewObjectSpd(redCircle, 10, 10)
+	entity.NewObjectSpd(blueCircle, 10, 10)
 	pump1 := entity.NewObject(100, 100, 100, 100, color.RGBA{0, 255, 0, 255})
 	pump2 := entity.NewObject(300, 300, 100, 100, color.RGBA{0, 255, 0, 255})
 	wall1 := entity.NewObject(500, 0, 40, 400, color.RGBA{26, 35, 73, 100})
@@ -45,13 +45,13 @@ func NewGame() *Game {
 	g.wall1 = wall1
 	g.wall2 = wall2
 	w1, err1 := wall1.Split()
-	if err1!= nil {
+	if err1 != nil {
 		panic(err1)
 	}
 	g.allstat = w1
 	physics.InitStat(g.allstat...)
 	w2, err2 := wall2.Split()
-	if err2!= nil {
+	if err2 != nil {
 		panic(err2)
 	}
 	g.allstat = w2
@@ -72,6 +72,7 @@ func NewGame() *Game {
 func (g *Game) Update() error {
 	physics.DynCollision()
 	physics.DynMove()
+
 	physics.ScreenCollision(screenWidth, screenHeight)
 
 	physics.CharacterMove(g.character)
@@ -80,9 +81,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+
 	screen.Fill(color.RGBA{0, 0, 0, 255})
 	cords.DebugCoordsObject(screen, g.redCircle)
-	cords.DebugCharacter(screen, g.character, g.allstat)
+	cords.CharacterCollisionDebug(screen, g.character, g.pump1)
 	// Красный круг
 	opRedCircle := &ebiten.DrawImageOptions{}
 	opRedCircle.GeoM.Translate(g.redCircle.X, g.redCircle.Y)

@@ -8,9 +8,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+	"github.com/rudolfkova/pek/vec"
 	"github.com/rudolfkova/pek/entity"
 	"github.com/rudolfkova/pek/physics"
-	"github.com/rudolfkova/pek/vec"
 )
 
 // Создаёт координатную плоскость на экране
@@ -56,16 +56,26 @@ func DebugCoordsObject(screen *ebiten.Image, obj *entity.Object) {
 	)
 }
 
-func DebugCharacter(screen *ebiten.Image, obj *entity.Character, stat []*entity.Object) {
+func CharacterCollisionDebug(screen *ebiten.Image, c *entity.Character, stat *entity.Object) {
 	xPos, yPos := 0, 0
+	var stats []*entity.Object
+	stats = append(stats, stat)
+	c.XCenter = c.X + float64(c.Width)/2
+	c.YCenter = c.Y + float64(c.Height)/2
+	colLine := Line.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
+	xc1, _, err1 := colLine.Intersect(&stat.AB)
+
 	ebitenutil.DebugPrintAt(
 		screen,
 		fmt.Sprintf(
-			"XCross: %t, YCross:%t, XSpeed:%.2f, YSpeed:%.2f",
-			obj.AnyCrossX(stat),
-			obj.AnyCrossY(stat),
-			obj.XSpeed,
-			obj.YSpeed,
+			"1: %t, 2:%t, 3:%t, 4:%t, 5:%t, c.YCenter+float64(c.Height/2):%.2f, stat.AB.Y1:%.2f",
+			(c.YCenter+float64(c.Height/2) < stat.AB.Y1),
+			(xc1 > stat.AB.X1 && xc1 < stat.AB.X2),
+			physics.ABSign(c.SpdVec),
+			c.AllCross(stats),
+			err1 == nil,
+			(c.YCenter+float64(c.Height/2)),
+			stat.AB.Y1,
 		),
 		xPos, yPos,
 	)
@@ -134,12 +144,12 @@ func DebugCollision(screen *ebiten.Image, c *entity.Character, stat ...*entity.O
 	}
 }
 
-func DebugDyn (screen *ebiten.Image, dyn []*entity.Object, stats []*entity.Object) {
+func DebugDyn(screen *ebiten.Image, dyn []*entity.Object, stats []*entity.Object) {
 	for _, c := range dyn {
 		for _, stat := range stats {
 			c.XCenter = c.X + float64(c.Width)/2
 			c.YCenter = c.Y + float64(c.Height)/2
-			colLine := vec.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
+			colLine := Line.NewVec(c.XCenter, c.YCenter, stat.XCenter, stat.YCenter)
 			xc1, _, err1 := colLine.Intersect(&stat.AB)
 			xc2, _, err2 := colLine.Intersect(&stat.DC)
 			_, yc3, err3 := colLine.Intersect(&stat.BC)

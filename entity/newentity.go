@@ -16,14 +16,14 @@ type Object struct {
 	Img          *ebiten.Image
 	XSpeed       float64
 	YSpeed       float64
-	SpdVec       vec.Vec
+	SpdVec       Line.Line
 	DynCollision *Crossroad
 	XCenter      float64
 	YCenter      float64
-	AB           vec.Vec
-	BC           vec.Vec
-	DC           vec.Vec
-	AD           vec.Vec
+	AB           Line.Line
+	BC           Line.Line
+	DC           Line.Line
+	AD           Line.Line
 	Orient       int8
 	Color        color.RGBA
 }

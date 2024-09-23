@@ -22,7 +22,7 @@ type Character struct {
 	DynCollision *Crossroad
 	XCenter      float64
 	YCenter      float64
-	SpdVec       vec.Vec
+	SpdVec       Line.Line
 }
 
 func NewCharacter(name string, x float64, y float64, width uint, height uint, color color.RGBA) *Character {
@@ -34,8 +34,8 @@ func NewCharacter(name string, x float64, y float64, width uint, height uint, co
 		Height:      height,
 		HP:          100,
 		Img:         ebiten.NewImage(int(width), int(height)),
-		XSpeedConst: 5,
-		YSpeedConst: 5,
+		XSpeedConst: 10,
+		YSpeedConst: 10,
 	}
 	c.XCenter = x + float64(width)/2
 	c.YCenter = y + float64(height)/2
